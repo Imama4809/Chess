@@ -170,7 +170,7 @@ def board_setup(chessboard_dictionary):
     bp4 = PAM('Pawn','Black','d7')
     bp5 = PAM('Pawn','Black','e7')
     bp6 = PAM('Pawn','Black','f7')
-    bp7 = PAM('Pawn','Black','g2')
+    bp7 = PAM('Pawn','Black','g7')
     bp8 = PAM('Pawn','Black','h7')
 
 
