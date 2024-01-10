@@ -265,7 +265,7 @@ def check_pawn_promotion_for_colour(dict,screen,colour):
             if dict[val].piece == "Pawn":
                 if dict[val].position[1] == place:
                     while True:
-                        inp = input()
+                        inp = input().lower()
                         if inp in ["Queen","Rook","Bishop","Knight"]:
                             dict[val].piece = str(inp)
                             break
