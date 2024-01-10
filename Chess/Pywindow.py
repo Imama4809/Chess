@@ -1,179 +1,273 @@
-import pygame as py 
+import pygame
 import sys
-import os
+import os 
+import random 
+
+from sol import interchange_number_and_letter #for slice of life 
+
+# Initialize Pygame
+pygame.init()
+
+print(os.path.dirname("Pieces"))
+
+def pieces_onto_board(dict,screen):
+    for val in dict: #prints all the pieces onto the dictionary 
+        if dict[val] != 0 and dict[val] !=1:
+            image = pygame.image.load(f"Pieces/{dict[val].colour}_{dict[val].piece}.png")
+            screen.blit(image,((dict[val].position[0]-1)*50,400-(dict[val].position[1])*50)) #we need to do 400- since the pygame window starts in the top left
 
 
-def creat_board_dict(dthc):  # dictionary to hold chessboard
-    for letters in 'abcdefgh':
-        for values in range(1,9):
-            dthc[letters + str(values)] = 0
-    return dthc
-from sol import interchange_number_and_letter
-
-#creating the chessboard 
-chessboard = {}
-creat_board_dict(chessboard)
-
-
-
-class PAM: #rename to pieces and moves after 
-    def __init__(self, piece, colour, position, moved = False,turn_after_double = False,double_move=False): #INIT (haha get it, sounds british)
-        self.piece = piece
-        self.colour = colour
-        if self.colour == 'White':
-            self.othercolour = 'Black'
-        if self.colour == 'Black':
-            self.othercolour = 'White'
-        self.letnum_notation_position = position 
-        self.position = (interchange_number_and_letter(position[0]),int(position[1])) #this returns the position as a tuple of 2 numbers i.e. a4 --> (1,4)
-        chessboard[position] = self
-        self.moved = moved
-        self.turn_after_double = False
-        self.double_move = False
-    def move_list(self):
-        #special
-        if self.piece == 'King': ##special case
-            m_l = []
-            for i,j in [(1,0),(0,1),(-1,0),(0,-1),(1,1),(-1,1),(1,-1),(-1,-1)]:
-                if (self.position[0]+i-4.5)**2 > 12.25 or (self.position[1]+j-4.5)**2 > 12.25: 
-                    #the position is in values between 1 and 8, thus 4.5 being the middle and 3.5 being the distance from the median to the max and min
-                    #this means that if we subtract a value that is outside of the range of 1, and 8 from the median, it would be greater than 3.5**2
-                    #thus to filter out values outside that range, we subtract the number by 4.5 and check if its greater than 3.5**2 (12.25)
-                    continue
-                if chessboard[(interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j))] !=0 and chessboard[(interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j))] !=1:#this makes sure the position the piece is trying to go to is empty 
-                    if chessboard[(interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j))].colour != self.colour: #this checks if the piece is capturable 
-                        m_l.append((interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j ))) #if it is capturable, then add it to teh list of positions
-                    continue #move on to next iteration n
-                m_l.append((interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j)))
-            return m_l
-        #special
-        if self.piece == 'Pawn': ##special case 
-            if self.colour == 'White':
-                movement = 1
-            if self.colour == 'Black':
-                movement = -1
-            m_l = []#it is seperated into two in order to help with dealing with possible king movement 
-            list_for_ij = [(0,movement)]
-            if self.moved == False:
-                list_for_ij = [(0,movement),(0,movement*2)]  
-            for i,j in list_for_ij:
-                if (self.position[0]+i-4.5)**2 > 12.25 or (self.position[1]+j-4.5)**2 > 12.25: 
-                    #the position is in values between 1 and 8, thus 4.5 being the middle and 3.5 being the distance from the median to the max and min
-                    #this means that if we subtract a value that is outside of the range of 1, and 8 from the median, it would be greater than 3.5**2
-                    #thus to filter out values outside that range, we subtract the number by 4.5 and check if its greater than 3.5**2 (12.25)
-                    continue
-                if chessboard[(interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j))] !=0 and chessboard[(interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j))] !=1:#this makes sure the position the piece is trying to go to is empty 
-                    continue #move on to next iteration 
-                m_l.append((interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j)))
-            for i,j in [(1,movement),(-1,movement)]:
-                if (self.position[0]+i-4.5)**2 > 12.25 or (self.position[1]+j-4.5)**2 > 12.25: 
-                    #the position is in values between 1 and 8, thus 4.5 being the middle and 3.5 being the distance from the median to the max and min
-                    #this means that if we subtract a value that is outside of the range of 1, and 8 from the median, it would be greater than 3.5**2
-                    #thus to filter out values outside that range, we subtract the number by 4.5 and check if its greater than 3.5**2 (12.25)
-                    continue
-                if chessboard[(interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j))] !=0:#this checks if the position the piece is trying to go to is empty 
-                    if chessboard[(interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j))] ==1:
-                        m_l.append((interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j ))) 
-                        continue
-                    if chessboard[(interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j))].colour != self.colour: #this checks if the piece is capturable 
-                        m_l.append((interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j ))) #if it is capturable, then add it to teh list of positions
-                    continue #move on to next iteration 
     
-            return m_l
+def paths_of_enemy_pieces(chessboard,colour): #this is required for king movement 
+    total_list = []
+    for val in chessboard:
+        if chessboard[val]!=0 and chessboard[val]!=1 and chessboard[val].piece != 'King':
+            if chessboard[val].colour == colour:
+                if chessboard[val].piece == "Pawn": #this if statement makes sure that the king can be in front of pawns, but not to their diagonals 
+                    if chessboard[val].colour == 'White':
+                        movement = 1
+                    if chessboard[val].colour == 'Black':
+                        movement = -1
+                    for i,j in [(1,movement),(-1,movement)]:
+                        if (chessboard[val].position[0]+i-4.5)**2 > 12.25 or (chessboard[val].position[1]+j-4.5)**2 > 12.25: 
+                            #the position is in values between 1 and 8, thus 4.5 being the middle and 3.5 being the distance from the median to the max and min
+                            #this means that if we subtract a value that is outside of the range of 1, and 8 from the median, it would be greater than 3.5**2
+                            #thus to filter out values outside that range, we subtract the number by 4.5 and check if its greater than 3.5**2 (12.25)
+                            continue
+                        total_list.append((interchange_number_and_letter(chessboard[val].position[0]+i) + str(chessboard[val].position[1]+j ))) 
+                else: 
+                    total_list.extend(chessboard[val].move_list())
+
+
+                
+    return total_list
+
+def is_king_in_path_of_enemy_pieces(king,colour_of_king,chessboard): #is the king in LOS???SS
+    if king.letnum_notation_position in paths_of_enemy_pieces(chessboard,king.othercolour):
+        return True
+    else:
+        return False
+            
+    
+global turn 
+turn= "White"
+
+
+    
+# Constants
+def create_chessboard(dict):
+    global turn
+    WIDTH, HEIGHT = 400, 400
+    LIGHT_BLUE = (173, 216, 230)
+    GREEN = (55, 229, 180)
+    SQUARE_SIZE = WIDTH // 8
+    
+    
+
+    # Create the Pygame window
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("Chessboard")
+
+    # Main game loop
+    while True:
+        # Draws the surface object to the screen.
+        pygame.display.update() 
         
-        if self.piece in ['Queen','Bishop','Rook']:
-            possible_directions_queen = [(1,0),(0,1),(-1,0),(0,-1),(1,1),(-1,1),(1,-1),(-1,-1)]
-            possible_directions_bishop = [(1,1),(-1,1),(1,-1),(-1,-1)]
-            possible_directions_rook = [(1,0),(0,1),(-1,0),(0,-1)]
-            m_l = [] # move list
-            list_used = eval('possible_directions_' + self.piece.lower())
-            for i,j in list_used: #these are the possible directional diagonals and lines of queen movement
-                inc_i=i 
-                inc_j=j
-                #the number we can add is equivalent to the starting value of i and j, thus we save it and use those saved values 
-                while True:
-                    if (self.position[0]+i-4.5)**2 > 12.25 or (self.position[1]+j-4.5)**2 > 12.25: 
-                        #the position is in values between 1 and 8, thus 4.5 being the middle and 3.5 being the distance from the median to the max and min
-                        #this means that if we subtract a value that is outside of the range of 1, and 8 from the median, it would be greater than 3.5**2
-                        #thus to filter out values outside that range, we subtract the number by 4.5 and check if its greater than 3.5**2 (12.25)
-                        break
-                    if chessboard[(interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j))] !=0 and chessboard[(interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j))] !=1:#this makes sure the position the piece is trying to go to is empty 
-                        if chessboard[(interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j))].colour != self.colour: #this checks if the piece is capturable 
-                            m_l.append((interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j ))) #if it is capturable, then add it to teh list of positions
-                        break #break out of the iteration 
-                    #write a comment for this function ########################################################################3
-                    m_l.append((interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j)))
-                    i +=inc_i
-                    j +=inc_j
-            return m_l
-        #horsey is special (I hate Josh Choong)
-        if self.piece == 'Knight':
-            m_l = []
-            for i,j in [(1,2),(2,1),(-1,2),(2,-1),(1,-2),(-2,1),(-1,-2),(-2,-1)]: #these are the possible movments for a knight
-                if (self.position[0]+i-4.5)**2 > 12.25 or (self.position[1]+j-4.5)**2 > 12.25:
-                    continue
-                if chessboard[(interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j))] !=0 and chessboard[(interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j))] !=1:#this makes sure the position the piece is trying to go to is empty 
-                    if chessboard[(interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j))].colour != self.colour: #this checks if the piece is capturable 
-                        m_l.append((interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j )))#if it is capturable, then add it to teh list of positions
-                    continue #break out of the iteration 
-                #we use continue in these functions because we don't have a while True loop to iterate through diagonals or lines
-                m_l.append((interchange_number_and_letter(self.position[0]+i) + str(self.position[1]+j)))
-            return m_l
-    def get_piece_under(self):
-        pos_to_delete = list(self.position)
-        num = 0
-        if self.colour == "White":
-            num = -1
-        if self.colour == "Black":
-            num = 1
-        pos_to_delete[1] = int(self.position[1])+num 
-        letnum_pos = interchange_number_and_letter(pos_to_delete[0]) + str(pos_to_delete[1])
-        return letnum_pos
-    def checker(self): #this is a function to help with undersatnding how things work, delete after 
-        # print(self.position)
-        return self.position
-    
-    
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: # to quit 
+                pygame.quit()
+                sys.exit()
 
-    
-def board_setup(chessboard_dictionary):
-    #white pieces 
-    wr1 = PAM('Rook','White','a1')
-    wh1 = PAM('Knight','White','b1')# h for horsy, courtesy of Josh Choong
-    wb1 = PAM('Bishop','White','c1')
-    wqu = PAM('Queen','White','d1')
-    wki = PAM('King','White','e1')
-    wb2 = PAM('Bishop','White','f1')
-    wh2 = PAM('Knight','White','g1')# h for horsy, courtesy of Josh Choong
-    wr2 = PAM('Rook','White','h1')
-    wp1 = PAM('Pawn','White','a2')
-    wp2 = PAM('Pawn','White','b2')
-    wp3 = PAM('Pawn','White','c2')
-    wp4 = PAM('Pawn','White','d2')
-    wp5 = PAM('Pawn','White','e2')
-    wp6 = PAM('Pawn','White','f2')
-    wp7 = PAM('Pawn','White','g2')
-    wp8 = PAM('Pawn','White','h2')
-    
-    #black pieces 
-    br1 = PAM('Rook','Black','a8')
-    bh1 = PAM('Knight','Black','b8')# h for horsy, courtesy of Josh Choong
-    bb1 = PAM('Bishop','Black','c8')
-    bqu = PAM('Queen','Black','d8')
-    bki = PAM('King','Black','e8')
-    bb2 = PAM('Bishop','Black','f8')
-    bh2 = PAM('Knight','Black','g8')# h for horsy, courtesy of Josh Choong
-    br2 = PAM('Rook','Black','h8')
-    bp1 = PAM('Pawn','Black','a7')
-    bp2 = PAM('Pawn','Black','b7')
-    bp3 = PAM('Pawn','Black','c7')
-    bp4 = PAM('Pawn','Black','d7')
-    bp5 = PAM('Pawn','Black','e7')
-    bp6 = PAM('Pawn','Black','f7')
-    bp7 = PAM('Pawn','Black','g7')
-    bp8 = PAM('Pawn','Black','h7')
+        # Draw the chessboard
+        for row in range(8):
+            for col in range(8):
+                color = GREEN if (row + col) % 2 == 0 else LIGHT_BLUE
+                pygame.draw.rect(screen, color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+                
+        pieces_onto_board(dict,screen) #function to place pieces onto board
+        
+        # Update the display
+        pygame.display.flip()
+        # Set the frames per second
+        
+        pygame.time.Clock().tick(60)
+       
+        second_click = False #this is to check whether a second click has occurred 
+                    
+                            
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            x, y = pygame.mouse.get_pos() #first mouse click position
+            place_of_first_click = interchange_number_and_letter(1+x//50) + str(8-y//50) #location of first click 
+            if dict[place_of_first_click] !=0 and dict[place_of_first_click] !=1 and dict[place_of_first_click].colour == turn : #making sure its not empty 
+                while (second_click == False):
+                    for event in pygame.event.get():
+                        if event.type == pygame.MOUSEBUTTONDOWN: #second mouse click position 
+                            x_new, y_new = pygame.mouse.get_pos()
+                            
+                            domove(x,y,x_new,y_new,dict,screen)
+                            check_pawn_promotion_for_colour(dict,screen, "White")
+                            check_pawn_promotion_for_colour(dict,screen,"Black")
+                            second_click = True
+                            break
+                            
+                        if event.type == pygame.QUIT: # to quit #might be able to create a function if you take event as an input 
+                            pygame.quit()
+                            sys.exit()   
+            else:
+                print(f"its {turn}'s turn")   
+                    
+                        
+        if event.type == pygame.QUIT: # to quit 
+            pygame.quit()
+            sys.exit()
+                
+            
 
 
-board_setup(chessboard)
-from Pywindow import create_chessboard
-create_chessboard(chessboard)
+# def compmove(dict,screen):
+#     global turn
+#     for val in dict:
+        
+#     place_of_first_click = random.choice()
+
+def domove(x,y,x_new,y_new,dict,screen):
+    WIDTH, HEIGHT = 400, 400
+    LIGHT_BLUE = (173, 216, 230)
+    GREEN = (55, 229, 180)
+    SQUARE_SIZE = WIDTH // 8
+    check = False
+    global turn 
+    global second_click
+    place_of_first_click = interchange_number_and_letter(1+x//50) + str(8-y//50) #location of first click 
+    place_of_second_click = interchange_number_and_letter(1+x_new//50) + str(8-y_new//50) #this gets the location on the board of the second click 
+    if place_of_second_click in dict[place_of_first_click].move_list(): 
+                              
+        #specific check to see if its a pawn and treats it differently on first move 
+        if dict[place_of_first_click].piece == 'Pawn' and dict[place_of_first_click].moved == False and len(dict[place_of_first_click].move_list()) == 2 and place_of_second_click == dict[place_of_first_click].move_list()[1]:
+            dict[dict[place_of_first_click].move_list()[0]] = 1
+            dict[place_of_first_click].double_move = True
+            dict[place_of_first_click].moved = True
+        
+        
+        #changes positions
+        buffer_to_check_for_king = dict[place_of_second_click]
+        dict[place_of_second_click] = dict[place_of_first_click]
+        dict[place_of_second_click].position = (1+x_new//50,8-y_new//50) #we have to change it to the coordinate value in the class its defined as a coordinate value 
+        dict[place_of_second_click].letnum_notation_position = place_of_second_click
+        has_it_moved_before = dict[place_of_second_click]
+        dict[place_of_second_click].moved = True
+        if buffer_to_check_for_king == 1:
+            dict[dict[place_of_second_click].get_piece_under()] = 0
+            pieces_onto_board(dict,screen)
+            pygame.display.flip()
+        if turn == "White":
+            turn = "Black"
+        elif turn == "Black":
+            turn ="White" 
+            
+            
+            
+            
+        dict[place_of_first_click] = 0
+                
+        #makes sure after the first move, that you cannot en passant anymore         
+        for val in dict:
+            if type(dict[val]) != int :
+                if dict[val].piece=="Pawn" and dict[val].double_move == True:
+                    if dict[val].turn_after_double == False:
+                        dict[val].turn_after_double = True
+                    elif dict[val].turn_after_double == True:
+                        ghost_pawn = dict[val].get_piece_under()
+                        dict[ghost_pawn] = 0
+                        dict[val].turn_after_double = False
+                        dict[val].double_move = False
+                        
+        #print(dict)
+        
+        
+                        
+        #MAKING SURE KING CANNOT BE IN LINE OF SIGHT AND IF IT IS, IT RETURNS BACK TO ORIGINAL POSITION 
+        for val in dict:
+            if type(dict[val]) != int:
+                if dict[val].piece == 'King' and dict[val].othercolour == turn:
+                    if is_king_in_path_of_enemy_pieces(dict[val],dict[val].colour,dict):
+                        print("THE KING FALLS")
+                        dict[place_of_first_click] = dict[place_of_second_click]
+                        dict[place_of_first_click].letnum_notation_position = place_of_first_click
+                        dict[place_of_first_click].position = (1+x//50,8-y//50)
+                        dict[place_of_second_click] = buffer_to_check_for_king
+                        dict[place_of_first_click] = has_it_moved_before
+                        #this is needed so that the turn goes back to white, it essentially checks to make sure the king isn't in danger, and if it is, sends it back to the original turn
+                        if turn == "White":
+                            turn = "Black"
+                        elif turn == "Black":
+                            turn ="White"
+                    
+                    
+        
+        pieces_onto_board(dict,screen)
+        pygame.display.flip()
+        return 0 
+
+    #CASTLING 
+    elif dict[place_of_second_click] !=0 and dict[place_of_second_click] !=1:
+        if dict[place_of_first_click].piece == "King" and dict[place_of_second_click].piece == "Rook" and  dict[place_of_first_click].colour == turn and dict[place_of_second_click].colour == turn:
+            if dict[place_of_first_click].moved == False and dict[place_of_second_click].moved == False:
+                list_of_vals_that_must_be_empty = []
+                direction_of_movement = dict[place_of_first_click].position[0] - dict[place_of_second_click].position[0]
+                if direction_of_movement > 0:
+                    direction_of_movement = -1
+                elif direction_of_movement <0:
+                    direction_of_movement=1
+                for val in range(1,abs(dict[place_of_first_click].position[0]-dict[place_of_second_click].position[0])):
+                    print(interchange_number_and_letter(val*direction_of_movement + 1+x//50) + str(8-y//50))
+                    if dict[interchange_number_and_letter(val*direction_of_movement + 1+x//50) + str(8-y//50)]!=0 and dict[interchange_number_and_letter(val*direction_of_movement + 1+x//50) + str(8-y//50)]!=1 or interchange_number_and_letter(val*direction_of_movement + 1+x//50) + str(8-y//50) in paths_of_enemy_pieces(dict,dict[place_of_first_click].othercolour):
+                            print("sorry, you can't castle through pieces")
+                            second_click = True
+                            check = True
+                            break
+                if check==True:
+                    return 0
+                new_king_place = interchange_number_and_letter(2*direction_of_movement + 1+x//50) + str(8-y//50)
+                new_rook_place = interchange_number_and_letter(direction_of_movement +1 +x//50) + str(8-y//50)
+                dict[new_king_place] = dict[place_of_first_click]
+                dict[new_rook_place] = dict[place_of_second_click]
+                dict[new_king_place].letnum_notation_position = new_king_place
+                dict[new_king_place].position = (2*direction_of_movement +1 + x//50,8-y//50)
+                dict[new_rook_place].letnum_notation_position = new_rook_place
+                dict[new_rook_place].position = (direction_of_movement +1+x//50,8-y_new//50)
+                dict[place_of_first_click] = 0
+                dict[place_of_second_click] = 0
+                for row in range(8):
+                    for col in range(8):
+                        color = GREEN if (row + col) % 2 == 0 else LIGHT_BLUE
+                        pygame.draw.rect(screen, color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+                pieces_onto_board(dict,screen)
+                pygame.display.flip()
+                if turn == "White":
+                    turn = "Black"
+                elif turn == "Black":
+                    turn ="White"
+                return 0
+    else:
+        print(f"invalid move for {dict[place_of_first_click].piece} at {dict[place_of_first_click].letnum_notation_position}")
+        return 0 
+    
+#PROMOTION
+def check_pawn_promotion_for_colour(dict,screen,colour):
+    if colour == "White":
+        place = 8
+    if colour == "Black":
+        place = 1
+    for val in dict:
+        if type(dict[val]) != int:
+            if dict[val].piece == "Pawn":
+                if dict[val].position[1] == place:
+                    while True:
+                        inp = input()
+                        if inp in ["Queen","Rook","Bishop","Knight"]:
+                            dict[val].piece = str(inp)
+                            break
+                        else:
+                            print("not a valid piece")
