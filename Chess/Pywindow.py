@@ -279,7 +279,7 @@ def do_move(x,y,x_new,y_new,dict,screen):
     
     
 
-def random_move(dict,screen,turn):
+def random_move(dict,screen):
     print(turn)
     list_of_turn_pieces = []
     rooks = []
