@@ -17,7 +17,7 @@ creat_board_dict(chessboard)
 
 
 class PAM: #rename to pieces and moves after 
-    def __init__(self, piece, colour, position, moved = False,turn_after_double = False,double_move=False): #INIT (haha get it, sounds british)
+    def __init__(self, piece, colour, position, moved = False,turn_after_double = False,double_move=False, castle = False): #INIT (haha get it, sounds british)
         self.piece = piece
         self.colour = colour
         if self.colour == 'White':
@@ -30,6 +30,7 @@ class PAM: #rename to pieces and moves after
         self.moved = moved
         self.turn_after_double = False
         self.double_move = False
+        self.castle = castle
     def move_list(self):
         #special
         if self.piece == 'King': ##special case
