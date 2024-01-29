@@ -151,7 +151,7 @@ def board_setup_and_reset(chessboard_dictionary):
     wp2 = PAM('Pawn','White','b2')
     wp3 = PAM('Pawn','White','c2')
     wp4 = PAM('Pawn','White','d2')
-    wp5 = PAM('Pawn','White','e3')
+    wp5 = PAM('Pawn','White','e2')
     wp6 = PAM('Pawn','White','f2')
     wp7 = PAM('Pawn','White','g2')
     wp8 = PAM('Pawn','White','h2')
@@ -170,7 +170,7 @@ def board_setup_and_reset(chessboard_dictionary):
     bp3 = PAM('Pawn','Black','c7')
     bp4 = PAM('Pawn','Black','d7')
     bp5 = PAM('Pawn','Black','e7')
-    bp6 = PAM('Pawn','Black','f6')
+    bp6 = PAM('Pawn','Black','f7')
     bp7 = PAM('Pawn','Black','g7')
     bp8 = PAM('Pawn','Black','h7')
 
